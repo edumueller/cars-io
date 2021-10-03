@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -24,5 +25,10 @@ export class UsersController {
   @Get()
   findAllUser(@Query('email') email: string) {
     return this.usersService.find(email);
+  }
+
+  @Delete('/:id')
+  deleteUser(@Param('id') id: string) {
+    return this.usersService.remove(parseInt(id));
   }
 }
