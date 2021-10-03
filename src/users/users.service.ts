@@ -10,4 +10,17 @@ export class UsersService {
     const user = this.repo.create({ email, password }); // If you don't create using this function but save directly, hooks will not be executed
     return this.repo.save(user);
   }
+  findOne(id: number) {
+    return this.repo.findOne(id);
+  }
+  find(email: string) {
+    return this.repo.find({ email });
+  }
+  async update(id: number, attrs: Partial<User>) {
+    const user = await this.repo.findOne(id);
+    if (!user) throw new Error('user not found');
+    Object.assign(user, attrs);
+    return this.repo.save(user);
+  }
+  remove() {}
 }
