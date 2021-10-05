@@ -16,11 +16,14 @@ Content-Type: application/json
   "password": "1234"
 }
 
-### Sign in
+### Sign out
 POST http://localhost:3000/auth/signout
 
 ### Find a particular user with id of 1
 GET http://localhost:3000/auth/2
+
+### Get the current signed in user
+GET http://localhost:3000/auth/whoami
 
 ### Find all users with a given email
 GET http://localhost:3000/auth?email=test@test.com
