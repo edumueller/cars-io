@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { User } from './user.entity';
@@ -10,10 +9,21 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     // Create a fake copy of the users service
+    const users: User[] = [];
     fakeUsersService = {
-      find: () => Promise.resolve([]),
-      create: (email: string, password: string) =>
-        Promise.resolve({ id: 1, email, password } as User),
+      find: (email) => {
+        const filteredUsers = users.filter((user) => user.email === email);
+        return Promise.resolve(filteredUsers);
+      },
+      create: (email: string, password: string) => {
+        const user = {
+          id: Math.floor(Math.random() * 9999999),
+          email,
+          password,
+        } as User;
+        users.push(user);
+        return Promise.resolve(user);
+      },
     };
     const module = await Test.createTestingModule({
       providers: [
@@ -40,13 +50,38 @@ describe('AuthService', () => {
   });
 
   it('throws an error if user signs up with email that is in use', async () => {
-    fakeUsersService.find = () =>
-      Promise.resolve([{ id: 1, email: 'a', password: '1' } as User]);
+    await service.signup('asdf@asdf.com', 'mypassword');
     expect.assertions(1);
     try {
-      await service.signup('asdf@asdf.com', 'asdf');
+      await service.signup('asdf@asdf.com', 'mypassword');
     } catch (err) {
       expect(err.name).toMatch('BadRequestException');
     }
+  });
+
+  it('throws a 404 error if sign in is called with an email that does not exist', async () => {
+    expect.assertions(1);
+    try {
+      await service.signin('asdf@asdf.com', 'asdf');
+    } catch (err) {
+      expect(err.status).toEqual(404);
+    }
+  });
+
+  it('throws if an invalid password is provided', async () => {
+    await service.signup('asdf@asdf.com', 'mypassword');
+
+    expect.assertions(1);
+    try {
+      await service.signin('asdf@asdf.com', 'invalidpass');
+    } catch (err) {
+      expect(err.name).toMatch('BadRequestException');
+    }
+  });
+
+  it('returns a user if correct password is provided', async () => {
+    await service.signup('asdf@asdf.com', 'mypassword');
+    const user = await service.signin('asdf@asdf.com', 'mypassword');
+    expect(user).toBeDefined();
   });
 });
