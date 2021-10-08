@@ -1,5 +1,4 @@
-.env.development
-.env.test
+.env*
 test.sqlite
 
 # compiled output
